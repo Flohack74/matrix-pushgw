@@ -163,7 +163,7 @@ func handlePush(w http.ResponseWriter, r *http.Request) {
 		_logger.Infof("response from Ubuntu Touch push server: %s", resp.Status)
 	}
 
-	fmt.Println("done")
+	_logger.Infof("handlePush() done")
 
 	w.Write([]byte("{}"))
 }
