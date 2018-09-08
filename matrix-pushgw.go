@@ -153,8 +153,6 @@ func handlePush(w http.ResponseWriter, r *http.Request) {
 		b, _ := json.Marshal(m)
 		fmt.Println(string(b))
 		client := &http.Client{}
-		if (gConfig.UbuntuTouchPushServerUrl == "")
-		    gConfig.UbuntuTouchPushServerUrl = "https://push.ubports.com/notify"
 		r, _ := http.NewRequest("POST", gConfig.UbuntuTouchPushServerUrl, bytes.NewBuffer(b))
 		r.Header.Add("Content-Type", "application/json")
 		resp, err := client.Do(r)
@@ -179,6 +177,7 @@ type Config struct {
 	PushServerPort int
 	ServerCrtFile  string
 	ServerKeyFile  string
+	UbuntuTouchPushServerUrl string
 }
 
 func listenHTTP(wg *sync.WaitGroup) {
@@ -189,16 +188,23 @@ func listenHTTP(wg *sync.WaitGroup) {
 		return
 	}
 
+	if (gConfig.UbuntuTouchPushServerUrl == "") {
+		gConfig.UbuntuTouchPushServerUrl = "https://push.ubports.com/notify"
+	}
 	serverCrtFile := gConfig.ServerCrtFile
-	if (serverCrtFile == "")
+	if (serverCrtFile == "") {
 	    serverCrtFile = "server.crt"
+	}
 	serverKeyFile := gConfig.ServerKeyFile
-	if (serverKeyFile == "")
-	    serverKeyFile = "server.key"		
+	if (serverKeyFile == "") {
+	    serverKeyFile = "server.key"
+	}
+	fmt.Printf("Using the following configuration variables: %+v\n", gConfig)
 	if gConfig.SslPort != 0 {
 	    err := http.ListenAndServeTLS(":"+strconv.Itoa(gConfig.SslPort), serverCrtFile, serverKeyFile, nil)
         if err != nil {
             _logger.Errorf("Can't listen on HTTPS port: %s", err)
+		}
 	}
 
     if gConfig.SslPort != 0 {
@@ -209,7 +215,7 @@ func listenHTTP(wg *sync.WaitGroup) {
     }
 }
 
-func listenHTTPS(wg *sync.WaitGroup) {
+/* func listenHTTPS(wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	if (gConfig.SslPort == 0) {
@@ -221,7 +227,7 @@ func listenHTTPS(wg *sync.WaitGroup) {
         if err != nil {
             _logger.Errorf("Can't listen on HTTPS port: %s", err)
 		}
-}
+} */
 
 func signalHandler(c *chan os.Signal) {
 	for s := range *c {
@@ -257,8 +263,8 @@ func main() {
 		http.HandleFunc("/_matrix/push/r0/notify", handlePush)
 
 		var wg sync.WaitGroup
-		wg.Add(2)
-		go listenHTTPS(&wg)
+		wg.Add(1)
+		//go listenHTTPS(&wg)
 		go listenHTTP(&wg)
 
 		wg.Wait()
