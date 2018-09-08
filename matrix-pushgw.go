@@ -153,7 +153,7 @@ func handlePush(w http.ResponseWriter, r *http.Request) {
 		b, _ := json.Marshal(m)
 		fmt.Println(string(b))
 		client := &http.Client{}
-		r, _ := http.NewRequest("POST", "https://push.ubports.com/notify", bytes.NewBuffer(b))
+		r, _ := http.NewRequest("POST", gConfig.UbuntuTouchPushServerUrl, bytes.NewBuffer(b))
 		r.Header.Add("Content-Type", "application/json")
 		resp, err := client.Do(r)
 		if err != nil {
@@ -175,22 +175,59 @@ type Config struct {
 	DebugWS        bool
 	PushServerUrl  string
 	PushServerPort int
+	ServerCrtFile  string
+	ServerKeyFile  string
+	UbuntuTouchPushServerUrl string
 }
 
-func listenPlainHTTP(wg *sync.WaitGroup) {
+func listenHTTP(wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	if gConfig.PlainPort == 0 {
-		fmt.Println("Plain HTTP port not configured")
+	if (gConfig.PlainPort == 0) {
+		_logger.Errorf("HTTP not configured, returning")
 		return
 	}
 
-	err := http.ListenAndServe(":"+strconv.Itoa(gConfig.PlainPort), nil)
-
-	if err != nil {
-		fmt.Println("Can't listen on plain HTTP port:", err.Error())
+	if (gConfig.UbuntuTouchPushServerUrl == "") {
+		gConfig.UbuntuTouchPushServerUrl = "https://push.ubports.com/notify"
 	}
+	serverCrtFile := gConfig.ServerCrtFile
+	if (serverCrtFile == "") {
+	    serverCrtFile = "server.crt"
+	}
+	serverKeyFile := gConfig.ServerKeyFile
+	if (serverKeyFile == "") {
+	    serverKeyFile = "server.key"
+	}
+	fmt.Printf("Using the following configuration variables: %+v\n", gConfig)
+	if gConfig.SslPort != 0 {
+	    err := http.ListenAndServeTLS(":"+strconv.Itoa(gConfig.SslPort), serverCrtFile, serverKeyFile, nil)
+        if err != nil {
+            _logger.Errorf("Can't listen on HTTPS port: %s", err)
+		}
+	}
+
+    if gConfig.SslPort != 0 {
+        err := http.ListenAndServe(":"+strconv.Itoa(gConfig.PlainPort), nil)
+        if err != nil {
+		    _logger.Errorf("Can't listen on HTTP port: %s", err.Error())
+	    }
+    }
 }
+
+/* func listenHTTPS(wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	if (gConfig.SslPort == 0) {
+		_logger.Errorf("HTTP not configured, returning")
+		return
+	}
+		servercrt := gConfig
+	    err := http.ListenAndServeTLS(":"+strconv.Itoa(gConfig.SslPort), "server.crt", "server.key", nil)
+        if err != nil {
+            _logger.Errorf("Can't listen on HTTPS port: %s", err)
+		}
+} */
 
 func signalHandler(c *chan os.Signal) {
 	for s := range *c {
@@ -226,9 +263,9 @@ func main() {
 		http.HandleFunc("/_matrix/push/r0/notify", handlePush)
 
 		var wg sync.WaitGroup
-		wg.Add(2)
-
-		go listenPlainHTTP(&wg)
+		wg.Add(1)
+		//go listenHTTPS(&wg)
+		go listenHTTP(&wg)
 
 		wg.Wait()
 	}
