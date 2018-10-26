@@ -101,7 +101,6 @@ func handlePush(w http.ResponseWriter, r *http.Request) {
 	bodybytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		_logger.Errorf(err.Error())
-		fmt.Println(body)
 		http.Error(w, "", http.StatusBadRequest)
 		return
 	}
