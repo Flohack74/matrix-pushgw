@@ -80,6 +80,10 @@ type Notification struct {
 	Type                string `json:"type"`
 }
 
+type Message struct {
+	Message Notification `json:"message"`
+}
+
 type PushNotification struct {
 	Notification Notification
 }
@@ -95,7 +99,7 @@ type UbuntuTouchNotification struct {
 	Token string `json:"token"`
 	ClearPending bool `json:"clear_pending"`
 	ReplaceTag string `json:"replace_tag"`
-	Data Notification `json:"data"`
+	Data Message `json:"data"`
 }
 
 const expiryWeeks = 10
@@ -118,6 +122,8 @@ func handlePush(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "", http.StatusBadRequest)
 		return
 	}
+	var message Message
+	message.Message = n.Notification
 	_logger.Infof("Iterating through device list")
 	for _, d := range n.Notification.Devices {
 		_logger.Infof("Processing notification for push key %s", d.Pushkey)
@@ -128,7 +134,7 @@ func handlePush(w http.ResponseWriter, r *http.Request) {
 			Token: d.Pushkey,
 			ClearPending: false,
 			ReplaceTag: n.Notification.Event_id,
-			Data: n.Notification}
+			Data: message}
 		b, _ := json.Marshal(m)
 		client := &http.Client{}
 		r, _ := http.NewRequest("POST", gConfig.UbuntuTouchPushServerUrl, bytes.NewBuffer(b))
