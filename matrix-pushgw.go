@@ -71,7 +71,7 @@ type Notification struct {
 	Event_id            string `json:"event_id"`
 	Id                  string `json:"id"`
 	Room_id             string `json:"room_id"`
-	Room_Name           string `json:"room_name"`
+	Room_Name           *string `json:"room_name,omitempty"`
 	Room_Alias          string `json:"room_alias"`
 	User_Is_Target	    bool `json:"user_is_target"`
 	Prio                string `json:"prio"`
