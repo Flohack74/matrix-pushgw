@@ -32,6 +32,7 @@ import (
 	"syscall"
 	"sync"
 	"bytes"
+	"time"
 	
 	"github.com/ubports/ubuntu-push/logger"
 )
@@ -90,7 +91,7 @@ type UbuntuTouchNotification struct {
 	Token string `json:"token"`
 	ClearPending bool `json:"clear_pending"`
 	ReplaceTag string `json:"replace_tag"`
-	Data SmallNotification `json:"data"`
+	Data Notification `json:"data"`
 }
 
 type SmallNotification struct {
@@ -104,6 +105,8 @@ type SmallNotification struct {
 	Type                string
 
 }
+
+const expiryWeeks = 10
 
 func handlePush(w http.ResponseWriter, r *http.Request) {
 	_logger.Infof("handlePush() was called, trying to parse & dump plain notification JSON:")
@@ -132,24 +135,14 @@ func handlePush(w http.ResponseWriter, r *http.Request) {
 
 	for _, d := range n.Notification.Devices {
 		_logger.Infof("Processing notification for push key %s", d.Pushkey)
-		//TODO: Send modified JSON request to localhost:5001 in UT push format
-		smallNote := SmallNotification {
-			Content: n.Notification.Content,
-			Counts: n.Notification.Counts,
-			Event_id: n.Notification.Event_id,
-			Id: n.Notification.Id,
-			Room_id: n.Notification.Room_id,
-			Sender: n.Notification.Sender,
-			Sender_display_name: n.Notification.Sender_display_name,
-			Type: n.Notification.Type}
-			
+		expire := time.Now().AddDate(0, 0, 7 * expiryWeeks)
 		m := UbuntuTouchNotification {
 			AppId: d.App_id,
-			ExpireOn: "2019-10-08T14:48:00.000Z",
+			ExpireOn: expire.Format(time.RFC3339),
 			Token: d.Pushkey,
 			ClearPending: false,
 			ReplaceTag: n.Notification.Event_id,
-			Data: smallNote}
+			Data: n.Notification}
 		b, _ := json.Marshal(m)
 		fmt.Println(string(b))
 		client := &http.Client{}
@@ -215,20 +208,6 @@ func listenHTTP(wg *sync.WaitGroup) {
     }
 }
 
-/* func listenHTTPS(wg *sync.WaitGroup) {
-	defer wg.Done()
-
-	if (gConfig.SslPort == 0) {
-		_logger.Errorf("HTTP not configured, returning")
-		return
-	}
-		servercrt := gConfig
-	    err := http.ListenAndServeTLS(":"+strconv.Itoa(gConfig.SslPort), "server.crt", "server.key", nil)
-        if err != nil {
-            _logger.Errorf("Can't listen on HTTPS port: %s", err)
-		}
-} */
-
 func signalHandler(c *chan os.Signal) {
 	for s := range *c {
 		if s == syscall.SIGHUP {
@@ -264,7 +243,6 @@ func main() {
 
 		var wg sync.WaitGroup
 		wg.Add(1)
-		//go listenHTTPS(&wg)
 		go listenHTTP(&wg)
 
 		wg.Wait()
