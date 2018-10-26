@@ -38,42 +38,42 @@ import (
 )
 
 type Content struct {
-	Body           string
-	Format         string
-	Formatted_body string
-	Msgtype        string
+	Body           string `json:"body"`
+	Format         string `json:"format"`
+	Formatted_body string `json:"formatted_body"`
+	Msgtype        string `json:"msgtype"`
 }
 
 type Counts struct {
-	Unread int
+	Unread int `json:"unread"`
 }
 
 type DeviceData struct {
 }
 
 type Tweaks struct {
-	Highlight  bool
-	Sound      string
+	Highlight  bool `json:"highlight"`
+	Sound      string `json:"sound"`
 }
 
 type Device struct {
-	App_id     string
-	Data       DeviceData
-	Pushkey    string
-	Pushkey_ts int
-	Tweaks     Tweaks
+	App_id     string `json:"app_id"`
+	Data       DeviceData `json:"data"`
+	Pushkey    string `json:"pushkey"`
+	Pushkey_ts int `json:"pushkey_ts"`
+	Tweaks     Tweaks `json:"tweaks"`
 }
 
 type Notification struct {
-	Content             Content
-	Counts              Counts
-	Devices             []Device
-	Event_id            string
-	Id                  string
-	Room_id             string
-	Sender              string
-	Sender_display_name string
-	Type                string
+	Content             Content `json:"content"`
+	Counts              Counts `json:"counts"`
+	Devices             []Device `json:"devices"`
+	Event_id            string `json:"event_id"`
+	Id                  string `json:"id"`
+	Room_id             string `json:"room_id"`
+	Sender              string `json:"sender"`
+	Sender_display_name string `json:"sender_display_name"`
+	Type                string `json:"type"`
 }
 
 type PushNotification struct {
@@ -81,8 +81,8 @@ type PushNotification struct {
 }
 
 type DevMsg struct {
-	MsgType int
-	Error   bool
+	MsgType int `json:"msgtype"`
+	Error   bool `json:"error"`
 }
 
 type UbuntuTouchNotification struct {
@@ -92,18 +92,6 @@ type UbuntuTouchNotification struct {
 	ClearPending bool `json:"clear_pending"`
 	ReplaceTag string `json:"replace_tag"`
 	Data Notification `json:"data"`
-}
-
-type SmallNotification struct {
-	Content             Content
-	Counts              Counts
-	Event_id            string
-	Id                  string
-	Room_id             string
-	Sender              string
-	Sender_display_name string
-	Type                string
-
 }
 
 const expiryWeeks = 10
