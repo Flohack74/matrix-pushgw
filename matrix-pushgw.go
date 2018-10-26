@@ -98,29 +98,24 @@ const expiryWeeks = 10
 
 func handlePush(w http.ResponseWriter, r *http.Request) {
 	_logger.Infof("handlePush() was called, trying to parse & dump plain notification JSON:")
-
 	bodybytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		_logger.Errorf(err.Error())
+		fmt.Println(body)
 		http.Error(w, "", http.StatusBadRequest)
 		return
 	}
-
 	body := string(bodybytes)
-
-	fmt.Println(body)
-
 	dec := json.NewDecoder(strings.NewReader(body))
 	var n PushNotification
 	err = dec.Decode(&n)
 	if err != nil {
 		_logger.Errorf("Error parsing JSON: %s", err.Error())
+		fmt.Println(body)
 		http.Error(w, "", http.StatusBadRequest)
 		return
 	}
-
 	_logger.Infof("Iterating through device list")
-
 	for _, d := range n.Notification.Devices {
 		_logger.Infof("Processing notification for push key %s", d.Pushkey)
 		expire := time.Now().AddDate(0, 0, 7 * expiryWeeks)
@@ -132,13 +127,13 @@ func handlePush(w http.ResponseWriter, r *http.Request) {
 			ReplaceTag: n.Notification.Event_id,
 			Data: n.Notification}
 		b, _ := json.Marshal(m)
-		fmt.Println(string(b))
 		client := &http.Client{}
 		r, _ := http.NewRequest("POST", gConfig.UbuntuTouchPushServerUrl, bytes.NewBuffer(b))
 		r.Header.Add("Content-Type", "application/json")
 		resp, err := client.Do(r)
 		if err != nil {
 			_logger.Errorf("Error relaying push JSON to Ubuntu Touch push server: %s", err.Error())
+			fmt.Println(string(b))
 		}
 		defer r.Body.Close()
 		_logger.Infof("response from Ubuntu Touch push server: %s", resp.Status)
