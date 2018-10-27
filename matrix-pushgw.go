@@ -33,6 +33,7 @@ import (
 	"bytes"
 	"time"
 	"io"
+	"runtime"
 
 	"github.com/ubports/ubuntu-push/logger"
 )
@@ -128,16 +129,15 @@ func handlePush(w http.ResponseWriter, r *http.Request) {
 			ReplaceTag: n.Notification.Event_id,
 			Data: message}
 		b, _ := json.Marshal(m)
-		client := &http.Client{}
 		apiRequest, _ := http.NewRequest("POST", gConfig.UbuntuTouchPushServerUrl, bytes.NewBuffer(b))
 		apiRequest.Header.Add("Content-Type", "application/json")
-		resp, err := client.Do(apiRequest)
+		resp, err := localClient.Do(apiRequest)
 		if err != nil {
 			_logger.Errorf("Error relaying push JSON to Ubuntu Touch push server: %s", err.Error())
 			fmt.Println(string(b))
 		}
-		defer apiRequest.Body.Close()
-		io.Copy(ioutil.Discard, apiRequest.Body)
+		defer resp.Body.Close()
+		io.Copy(ioutil.Discard, resp.Body)
 		_logger.Infof("response from Ubuntu Touch push server: %s", resp.Status)
 	}
 	n.Notification.Room_Name = nil
@@ -206,13 +206,14 @@ func signalHandler(c *chan os.Signal) {
 
 var gConfig *Config
 var _logger logger.Logger
+var localClient *http.Client
 
 func main() {
 	file, _ := os.Open("matrix-pushgw.conf")
 	defer file.Close()
 	decoder := json.NewDecoder(file)
 	config := new(Config)
-
+	localClient = &http.Client{Timeout: time.Second * 10,}
 	err := decoder.Decode(config)
 	if err != nil {
 		fmt.Println("Can't open configuration file:", err)
