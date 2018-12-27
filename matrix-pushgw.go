@@ -46,10 +46,12 @@ type Content struct {
 }
 
 type Counts struct {
-	Unread int `json:"unread"`
+	Unread 	     int `json:"unread"`
+	Missed_calls int `json:"missed_calls"`
 }
 
-type DeviceData struct {
+type PusherData struct {
+	Format string `json:"format"`
 }
 
 type Tweaks struct {
@@ -59,7 +61,7 @@ type Tweaks struct {
 
 type Device struct {
 	App_id     string `json:"app_id"`
-	Data       DeviceData `json:"data"`
+	Data       PusherData `json:"data"`
 	Pushkey    string `json:"pushkey"`
 	Pushkey_ts int `json:"pushkey_ts"`
 	Tweaks     Tweaks `json:"tweaks"`
