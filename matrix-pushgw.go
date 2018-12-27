@@ -43,6 +43,7 @@ type Content struct {
 	Format         string `json:"format"`
 	Formatted_body string `json:"formatted_body"`
 	Msgtype        string `json:"msgtype"`
+	Membership     string `json:"membership"`
 }
 
 type Counts struct {
