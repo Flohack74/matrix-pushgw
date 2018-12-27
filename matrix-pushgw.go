@@ -126,7 +126,7 @@ func handlePush(w http.ResponseWriter, r *http.Request) {
 			ExpireOn: expire.Format(time.RFC3339),
 			Token: d.Pushkey,
 			ClearPending: false,
-			ReplaceTag: n.Notification.Event_id,
+			ReplaceTag: n.Notification.Room_id,
 			Data: message}
 		b, _ := json.Marshal(m)
 		apiRequest, _ := http.NewRequest("POST", gConfig.UbuntuTouchPushServerUrl, bytes.NewBuffer(b))
