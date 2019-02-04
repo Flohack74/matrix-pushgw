@@ -128,7 +128,7 @@ func handlePush(w http.ResponseWriter, r *http.Request) {
 			AppId: d.App_id,
 			ExpireOn: expire.Format(time.RFC3339),
 			Token: d.Pushkey,
-			ClearPending: false,
+			ClearPending: n.Notification.Counts.Unread == 0,
 			ReplaceTag: n.Notification.Room_id,
 			Data: message}
 		b, _ := json.Marshal(m)
