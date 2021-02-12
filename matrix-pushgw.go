@@ -229,7 +229,8 @@ func main() {
 		_logger = logger.NewSimpleLogger(os.Stderr, "info")
 		_logger.Infof("Starting Matrix Push Gateway...")
 		http.HandleFunc("/_matrix/push/r0/notify", handlePush)
-
+		//See https://github.com/matrix-org/synapse/pull/8865
+		http.HandleFunc("/_matrix/push/v1/notify", handlePush)
 		var wg sync.WaitGroup
 		wg.Add(1)
 		go listenHTTP(&wg)
