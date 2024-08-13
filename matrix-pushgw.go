@@ -122,6 +122,9 @@ func handlePush(w http.ResponseWriter, r *http.Request) {
 	message.Message = n.Notification
 	_logger.Infof("Iterating through device list")
 	for _, d := range n.Notification.Devices {
+		if len(d.Pushkey) == 0 {
+                        continue
+                }
 		_logger.Infof("Processing notification for push key %s", d.Pushkey)
 		expire := time.Now().AddDate(0, 0, 7 * expiryWeeks)
 		m := UbuntuTouchNotification {
