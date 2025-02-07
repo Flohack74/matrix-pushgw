@@ -121,6 +121,7 @@ func handlePush(w http.ResponseWriter, r *http.Request) {
 	var message Message
 	message.Message = n.Notification
 	_logger.Infof("Iterating through device list")
+	var rejected []string
 	for _, d := range n.Notification.Devices {
 		if len(d.Pushkey) == 0 {
                         continue
@@ -142,14 +143,24 @@ func handlePush(w http.ResponseWriter, r *http.Request) {
 			_logger.Errorf("Error relaying push JSON to Ubuntu Touch push server: %s", err.Error())
 			fmt.Println(string(b))
 		}
+		if resp.StatusCode == http.StatusUnauthorized {
+		    _logger.Infof("Pusher rejected by push server: %s", resp.Body)
+		    rejected = append(rejected, d.Pushkey)
+		}
 		defer resp.Body.Close()
 		io.Copy(ioutil.Discard, resp.Body)
 		_logger.Infof("response from Ubuntu Touch push server: %s", resp.Status)
 	}
+	var jsonResponse = map[string]interface{}{
+	    "rejected": rejected,
+	}
+	response, err := json.Marshal(jsonResponse)
+
 	n.Notification.Room_Name = nil
 	_logger.Infof("handlePush() done")
 
-	w.Write([]byte("{}"))
+
+	w.Write(response)
 }
 
 type Config struct {
