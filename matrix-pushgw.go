@@ -33,7 +33,6 @@ import (
 	"bytes"
 	"time"
 	"io"
-	"runtime"
 
 	"github.com/ubports/ubuntu-push/logger"
 )
