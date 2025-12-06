@@ -142,13 +142,12 @@ func handlePush(w http.ResponseWriter, r *http.Request) {
 			_logger.Errorf("Error relaying push JSON to Ubuntu Touch push server: %s", err.Error())
 			fmt.Println(string(b))
 		}
-		if resp.StatusCode == http.StatusUnauthorized {
+		if resp.StatusCode != http.StatusOK {
 		    _logger.Infof("Pusher rejected by push server: %s", resp.Body)
 		    rejected = append(rejected, d.Pushkey)
 		}
 		defer resp.Body.Close()
 		io.Copy(ioutil.Discard, resp.Body)
-		_logger.Infof("response from Ubuntu Touch push server: %s", resp.Status)
 	}
 	var jsonResponse = map[string]interface{}{
 	    "rejected": rejected,
