@@ -143,7 +143,13 @@ func handlePush(w http.ResponseWriter, r *http.Request) {
 			fmt.Println(string(b))
 		}
 		if resp.StatusCode != http.StatusOK {
-		    _logger.Infof("Pusher rejected by push server: %s", resp.Body)
+			bodyBytes, err := io.ReadAll(resp.Body)
+            if err != nil {
+                _logger.Errorf("Unknown error decoding response body: %i",err)
+            } else {
+                bodyString := string(bodyBytes)
+                _logger.Infof("Pusher rejected by push server: %i %s", resp.StatusCode, bodyString)
+            }
 		    rejected = append(rejected, d.Pushkey)
 		}
 		defer resp.Body.Close()
