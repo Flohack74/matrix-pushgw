@@ -145,10 +145,10 @@ func handlePush(w http.ResponseWriter, r *http.Request) {
 		if resp.StatusCode != http.StatusOK {
 			bodyBytes, err := io.ReadAll(resp.Body)
             if err != nil {
-                _logger.Errorf("Unknown error decoding response body: %i",err)
+                _logger.Errorf("Unknown error decoding response body: %d",err)
             } else {
                 bodyString := string(bodyBytes)
-                _logger.Infof("Pusher rejected by push server: %i %s", resp.StatusCode, bodyString)
+                _logger.Infof("Pusher rejected by push server: %d %s", resp.StatusCode, bodyString)
             }
 		    rejected = append(rejected, d.Pushkey)
 		}
