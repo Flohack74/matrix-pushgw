@@ -124,8 +124,8 @@ func handlePush(w http.ResponseWriter, r *http.Request) {
 	var rejected []string
 	for _, d := range n.Notification.Devices {
 		if len(d.Pushkey) == 0 {
-                        continue
-                }
+        	continue
+        }
 		_logger.Infof("Processing notification for push key %s", d.Pushkey)
 		expire := time.Now().AddDate(0, 0, 7 * expiryWeeks)
 		m := UbuntuTouchNotification {
@@ -194,22 +194,22 @@ func listenHTTP(wg *sync.WaitGroup) {
 	if (serverKeyFile == "") {
 	    serverKeyFile = "server.key"
 	}
-        fmt.Printf("Using the following configuration variables: %+v\n", gConfig)
-        if gConfig.SslPort != 0 {
-            go func() {
-                err := http.ListenAndServeTLS(":"+strconv.Itoa(gConfig.SslPort), serverCrtFile, serverKeyFile, nil)
-                if err != nil {
-                    _logger.Errorf("Can't listen on HTTPS port: %s", err)
-                }
-            }()
-        }
+	fmt.Printf("Using the following configuration variables: %+v\n", gConfig)
+	if gConfig.SslPort != 0 {
+		go func() {
+			err := http.ListenAndServeTLS(":"+strconv.Itoa(gConfig.SslPort), serverCrtFile, serverKeyFile, nil)
+			if err != nil {
+				_logger.Errorf("Can't listen on HTTPS port: %s", err)
+			}
+		}()
+	}
 
-        if gConfig.PlainPort != 0 {
-            err := http.ListenAndServe(":"+strconv.Itoa(gConfig.PlainPort), nil)
-            if err != nil {
-                _logger.Errorf("Can't listen on HTTP port: %s", err.Error())
-            }
-        }
+	if gConfig.PlainPort != 0 {
+		err := http.ListenAndServe(":"+strconv.Itoa(gConfig.PlainPort), nil)
+		if err != nil {
+			_logger.Errorf("Can't listen on HTTP port: %s", err.Error())
+		}
+	}
 }
 
 func signalHandler(c *chan os.Signal) {
